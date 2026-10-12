@@ -1,6 +1,7 @@
 param(
     [Parameter(Mandatory = $true)][ValidatePattern('^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$')][string]$Repository,
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [ValidatePattern('^v[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9_.-]+)?$')][string]$ReleaseTag
 )
 $ErrorActionPreference = "Stop"
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -29,7 +30,8 @@ try {
     $Source = Get-Content "outputs\VideoGrab\app.py" -Raw -Encoding UTF8
     $Version = [regex]::Match($Source, '(?m)^APP_VERSION = "(\d+\.\d+\.\d+)"').Groups[1].Value
     if (-not $Version) { throw "Cannot read product version." }
-    $Tag = "v$Version"
+    $Tag = if ($ReleaseTag) { $ReleaseTag } else { "v$Version" }
+    if ($Tag -ne "v$Version" -and -not $Tag.StartsWith("v$Version-")) { throw "Release tag must match product version." }
     $Branch = Invoke-Git @('symbolic-ref', '--short', 'HEAD')
     if (-not $Branch) { throw "Publish from a named branch." }
     if (-not $SkipBuild) { & (Join-Path $PSScriptRoot 'build_release.ps1') }
@@ -50,7 +52,12 @@ try {
         Invoke-Gh @('release', 'create', $Tag, '--repo', $Repository, '--verify-tag', '--draft', '--title', "VideoGrab $Version", '--notes', 'Private backup: Windows x64 installer, portable app, full source with pinned vendor dependencies, and SHA256 checksums. Personal data and credentials are excluded. See README.md for restore/build instructions.') | Out-Host
     }
     # Resume interrupted draft uploads only when existing bytes match the local artifact.
-    $Remote = (Invoke-Gh @('api', "repos/$Repository/releases/tags/$Tag")) | ConvertFrom-Json
+    # The tag lookup endpoint does not return unpublished drafts. Find the draft by ID.
+    $AllReleases = (Invoke-Gh @('api', '--paginate', '--slurp', "repos/$Repository/releases?per_page=100")) | ConvertFrom-Json
+    $Remote = @($AllReleases | ForEach-Object { $_ } | Where-Object tag_name -EQ $Tag)
+    if ($Remote.Count -ne 1) { throw "Cannot uniquely locate draft release." }
+    $Remote = $Remote[0]
+    $ReleaseId = $Remote.id
     foreach ($Name in $Names) {
         $Asset = @($Remote.assets | Where-Object name -EQ $Name)
         $File = Join-Path $ReleaseDir $Name
@@ -59,7 +66,7 @@ try {
             if ($Asset[0].digest -ne $Digest) { throw "Draft contains conflicting artifact: $Name. Not overwriting." }
         } else { Invoke-Gh @('release', 'upload', $Tag, $File, '--repo', $Repository) | Out-Host }
     }
-    $Remote = (Invoke-Gh @('api', "repos/$Repository/releases/tags/$Tag")) | ConvertFrom-Json
+    $Remote = (Invoke-Gh @('api', "repos/$Repository/releases/$ReleaseId")) | ConvertFrom-Json
     foreach ($Name in $Names) {
         $Asset = @($Remote.assets | Where-Object name -EQ $Name)
         $File = Get-Item -LiteralPath (Join-Path $ReleaseDir $Name)

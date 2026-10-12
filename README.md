@@ -39,6 +39,8 @@ powershell -ExecutionPolicy Bypass -File .\work\publish_release.ps1 -Repository 
 
 脚本验证仓库为私有，构建安装包与便携版，打包完整源码依赖，推送当前提交与版本 tag，并上传全部附件及 SHA256 清单。附件核验完成后才发布 draft。初次备份现有已验证安装包可加 `-SkipBuild`。
 
+同一产品版本仅更新备份工具时，可使用新的 `-ReleaseTag v2.3.2-backup.1`；已有版本标签不会被覆盖。
+
 未来更新时按 AGENTS.md 执行此流程。这不是应用内自动升级或后台定时任务；没有执行发布流程的本地修改不会自动上传。
 
 ## 备份范围
