@@ -1,0 +1,19 @@
+name: 功能建议
+description: 提出希望加入的新功能或体验改进
+title: "[建议] "
+body:
+  - type: markdown
+    attributes:
+      value: "欢迎提出建议。建议会公开，请勿包含个人凭据或私人内容；收到建议不代表承诺具体实现时间。"
+  - type: textarea
+    id: problem
+    attributes:
+      label: 希望解决什么问题？
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 希望怎样改进？
+    validations:
+      required: true

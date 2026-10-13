@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory = $true)][ValidatePattern('^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$')][string]$Repository,
     [switch]$SkipBuild,
-    [ValidatePattern('^v[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9_.-]+)?$')][string]$ReleaseTag
+    [ValidatePattern('^v[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9_.-]+)?$')][string]$ReleaseTag,
+    [ValidateSet('PUBLIC', 'PRIVATE')][string]$ExpectedVisibility = 'PUBLIC'
 )
 $ErrorActionPreference = "Stop"
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -23,7 +24,7 @@ function Invoke-Git {
 Push-Location $ProjectRoot
 try {
     $Info = (Invoke-Gh @('repo', 'view', $Repository, '--json', 'nameWithOwner,visibility,url')) | ConvertFrom-Json
-    if ($Info.visibility -ne 'PRIVATE') { throw "Refusing upload: repository is not private." }
+    if ($Info.visibility -ne $ExpectedVisibility) { throw "Refusing upload: expected $ExpectedVisibility repository, received $($Info.visibility). Visibility is never changed automatically." }
     $Origin = Invoke-Git @('remote', 'get-url', 'origin')
     if ($Origin -notin @("https://github.com/$Repository.git", "https://github.com/$Repository", "git@github.com:$Repository.git")) { throw "origin does not match the selected repository." }
     if (Invoke-Git @('status', '--porcelain', '--untracked-files=normal')) { throw "Commit related source changes before publishing." }
@@ -49,7 +50,7 @@ try {
     if ($LASTEXITCODE -eq 0) {
         if (-not ($Published | ConvertFrom-Json).isDraft) { throw "Release is already published. Increase version instead of replacing a release." }
     } else {
-        Invoke-Gh @('release', 'create', $Tag, '--repo', $Repository, '--verify-tag', '--draft', '--title', "VideoGrab $Version", '--notes', 'Private backup: Windows x64 installer, portable app, full source with pinned vendor dependencies, and SHA256 checksums. Personal data and credentials are excluded. See README.md for restore/build instructions.') | Out-Host
+        Invoke-Gh @('release', 'create', $Tag, '--repo', $Repository, '--verify-tag', '--draft', '--title', "VideoGrab $Version", '--notes', 'VideoGrab Windows x64 release: installer, portable app, source with pinned vendor dependencies, and SHA256 checksums. See README.md for features and installation, CHANGELOG.md for updates, and Issues for bug reports. Platform changes and compatibility fixes are tracked through continued maintenance; updates do not imply support for every link. Personal data and credentials are excluded.') | Out-Host
     }
     # Resume interrupted draft uploads only when existing bytes match the local artifact.
     # The tag lookup endpoint does not return unpublished drafts. Find the draft by ID.

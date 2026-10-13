@@ -1,0 +1,45 @@
+name: 问题反馈
+description: 反馈解析、下载、安装或使用中的问题
+title: "[问题] "
+body:
+  - type: markdown
+    attributes:
+      value: "感谢反馈！这里的内容会公开，请勿提交密码、cookies、配对密钥、带私人令牌的链接或完整浏览器数据。截图与日志请先遮挡个人信息。"
+  - type: input
+    id: version
+    attributes:
+      label: VideoGrab 版本
+      placeholder: 例如 2.3.2
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows 版本
+      placeholder: 例如 Windows 11 x64
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤与期望结果
+      description: 说明选择的视频/封面/MP3、画质和相关操作。
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: 错误提示或截图
+      description: 请删除个人信息和令牌后提供。
+    validations:
+      required: true
+  - type: input
+    id: sample
+    attributes:
+      label: 可公开的示例视频链接（可选）
+      description: 不要提交私密内容或带访问令牌的链接。
+  - type: textarea
+    id: context
+    attributes:
+      label: 补充说明（可选）
+      description: 可说明浏览器类型、是否使用代理，不要提供 cookies 或代理密码。

@@ -1,5 +1,12 @@
-VideoGrab bundles yt-dlp (The Unlicense) and an FFmpeg executable supplied by
-imageio-ffmpeg. FFmpeg is licensed under the LGPL/GPL depending on its build.
+VideoGrab bundles yt-dlp (The Unlicense).
+The shipped FFmpeg executable identifies itself as FFmpeg 7.1 essentials_build
+from www.gyan.dev, configured with --enable-gpl and --enable-version3.
+Its own -L output states GNU GPL version 3 or any later version.
+FFmpeg is a separate executable; VideoGrab does not modify its binary.
+Build provider: https://www.gyan.dev/ffmpeg/builds/
+Upstream version source: https://github.com/FFmpeg/FFmpeg/tree/n7.1
+License: https://github.com/FFmpeg/FFmpeg/blob/n7.1/COPYING.GPLv3
+FFmpeg licensing and external-library details: https://ffmpeg.org/legal.html
 It also bundles Node.js (MIT license) as the JavaScript runtime required by
 some supported sites.
 Public workspace connectivity uses cloudflared (Apache License 2.0).
@@ -7,7 +14,7 @@ The desktop interface uses CustomTkinter (MIT license) and Pillow (HPND).
 
 yt-dlp: https://github.com/yt-dlp/yt-dlp
 FFmpeg: https://ffmpeg.org/
-imageio-ffmpeg: https://github.com/imageio/imageio-ffmpeg
+imageio-ffmpeg (Python build dependency): https://github.com/imageio/imageio-ffmpeg
 Node.js: https://nodejs.org/
 cloudflared: https://github.com/cloudflare/cloudflared
 CustomTkinter: https://github.com/TomSchimansky/CustomTkinter

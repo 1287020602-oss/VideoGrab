@@ -4,6 +4,8 @@
 !/.gitattributes
 !/AGENTS.md
 !/README.md
+!/CHANGELOG.md
+!/.github/
 !/requirements-lock.txt
 !/work/
 /work/*
